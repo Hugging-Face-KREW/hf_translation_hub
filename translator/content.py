@@ -3,7 +3,7 @@ import re
 import string
 
 import requests
-from langchain.callbacks import get_openai_callback
+
 from langchain_anthropic import ChatAnthropic
 import boto3
 import json
@@ -12,21 +12,32 @@ from translator.prompt_glossary import PROMPT_WITH_GLOSSARY
 from translator.project_config import get_project_config
 
 
-def get_content(filepath: str, project: str = "transformers") -> str:
-    if filepath == "":
-        raise ValueError("No files selected for translation.")
+def get_content(project: str = "transformers", docs_url: str | None = None) -> str:
+    if not docs_url:
+        raise ValueError("docs_url must be provided to get_content.")
 
-    config = get_project_config(project)
-    # Extract repo path from repo_url (e.g., "huggingface/transformers")
-    repo_path = config.repo_url.replace("https://github.com/", "")
+    url = ""
+    print(f"[DEBUG] get_content received docs_url: {docs_url}")
+    if "/blob/" in docs_url:
+        # It's a full GitHub blob URL, convert to raw
+        url = docs_url.replace("https://github.com/", "https://raw.githubusercontent.com/").replace("/blob/", "/")
+    else:
+        # Assume it's a base GitHub repo URL, combine with filepath and main branch
+        # This case should ideally not be hit if docs_url is always a full blob URL
+        # but kept for robustness if the input format varies.
+        repo_owner_repo = docs_url.replace("https://github.com/", "")
+        # We need to extract the filepath from docs_url if it's not a full blob URL
+        # For now, raising an error if it's not a full blob URL to enforce input consistency.
+        raise ValueError("docs_url must be a full GitHub blob URL (e.g., containing /blob/).")
     
-    url = f"https://raw.githubusercontent.com/{repo_path}/main/{filepath}"
+    print(f"[DEBUG] Constructed content URL: {url}")
+
     response = requests.get(url)
     if response.status_code == 200:
         content = response.text
         return content
     else:
-        raise ValueError("Failed to retrieve content from the URL.", url)
+        raise ValueError(f"Failed to retrieve content from the URL: {url}. Status code: {response.status_code}")
 
 
 def preprocess_content(content: str) -> str:
