@@ -11,6 +11,7 @@ from translator.retriever import report
 import os
 from pathlib import Path
 
+
 def start_translate_handler_mcp(json_input_str):
     file_to_translate = ""
     project = ""
