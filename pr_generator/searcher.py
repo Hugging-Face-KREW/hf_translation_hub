@@ -24,8 +24,7 @@ logger = logging.getLogger(__name__)
 # Langchain imports
 try:
     from langchain_anthropic import ChatAnthropic
-    from langchain_classic.agents import AgentExecutor
-    from langchain.agents import create_tool_calling_agent
+    from langchain.agents import create_tool_calling_agent, AgentExecutor # Explicitly import AgentExecutor
     from langchain_core.prompts import ChatPromptTemplate
 
     REQUIRED_LIBS_AVAILABLE = True

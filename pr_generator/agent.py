@@ -23,6 +23,7 @@ DEFAULT_TEMPERATURE = 0.0
 # Library imports and error handling
 try:
     from github.GitRef import GitRef
+    from github import GithubException
     from langchain_anthropic import ChatAnthropic
 
     REQUIRED_LIBS_AVAILABLE = True
@@ -418,23 +419,110 @@ Documentation maintainers
         except Exception as e:
             return f"Failed to retrieve branch information: {str(e)}"
 
+    def _prepare_pr_data(
+        self,
+        reference_pr_url: str,
+        target_language: str,
+        filepath: str,
+        translated_filepath: str, # Changed to accept filepath
+        base_branch: str = "main",
+    ) -> Dict[str, Any]:
+        """Prepare all data required for PR creation without making GitHub API calls."""
+        # 1. Analyze reference PR
+        pr_analysis = self.analyze_reference_pr(reference_pr_url)
+        if "error" in pr_analysis:
+            return {"status": "error", "message": pr_analysis["error"]}
+        
+        # Read the translated document content from the provided file path
+        translated_doc_content = ""
+        if translated_filepath:
+            print(f"DEBUG (agent.py -> _prepare_pr_data): Attempting to read translated file from: {translated_filepath}") # Added logging
+            try:
+                with open(translated_filepath, 'r', encoding='utf-8') as f:
+                    translated_doc_content = f.read()
+            except FileNotFoundError:
+                return {"status": "error", "message": f"Translated file not found: {translated_filepath}"}
+            except Exception as e:
+                return {"status": "error", "message": f"Error reading translated file {translated_filepath}: {str(e)}"}
+
+        # 2. Generate translation file path and branch name
+        target_filepath = filepath.replace("/en/", f"/{target_language}/")
+        file_name = filepath.split("/")[-1]
+
+        branch_name = self.generate_branch_name_from_reference(
+            pr_analysis["head_branch"], target_language, file_name
+        )
+
+        # 3. Generate commit message
+        commit_messages = [commit["message"] for commit in pr_analysis["commits"]]
+        commit_message = self.generate_commit_message_from_reference(
+            commit_messages, target_language, file_name
+        )
+
+        # 4. Generate PR title and body
+        pr_title, pr_body = self.generate_pr_content_from_reference(
+            pr_analysis["title"],
+            pr_analysis["body"],
+            target_language,
+            filepath,
+            target_filepath,
+            file_name,
+        )
+
+        return {
+            "status": "preview_ready",
+            "reference_pr_url": reference_pr_url,
+            "target_language": target_language,
+            "filepath": filepath,
+            "branch_name": branch_name,
+            "commit_message": commit_message,
+            "target_filepath": target_filepath,
+            "pr_title": pr_title,
+            "pr_body": pr_body,
+            "head_branch_for_pr": f"{self.user_owner}:{branch_name}",
+            "base_branch_for_pr": f"{self.base_owner}:{base_branch}",
+        }
+
     def run_translation_pr_workflow(
         self,
         reference_pr_url: str,
         target_language: str,
         filepath: str,
-        translated_doc: str,
+        translated_filepath: str, # Changed to accept filepath
         base_branch: str = "main",
+        preview_mode: bool = False,
     ) -> Dict[str, Any]:
         """Execute translation document PR creation workflow."""
         try:
+            if preview_mode:
+                print("🚀 Running in preview mode...")
+                preview_data = self._prepare_pr_data(
+                    reference_pr_url, target_language, filepath, translated_filepath, base_branch
+                )
+                if preview_data["status"] == "error":
+                    return preview_data # Return error from preparation
+                return {"status": "preview", "data": preview_data}
+
+
+            # If not in preview mode, read the translated content from the file
+            translated_doc_content = ""
+            if translated_filepath:
+                try:
+                    with open(translated_filepath, 'r', encoding='utf-8') as f:
+                        translated_doc_content = f.read()
+                except FileNotFoundError:
+                    error_message = f"❌ Translated file not found: {translated_filepath}"
+                    return {"status": "error", "message": error_message, "error_details": error_message}
+                except Exception as e:
+                    error_message = f"❌ Error reading translated file {translated_filepath}: {str(e)}"
+                    return {"status": "error", "message": error_message, "error_details": error_message}
+
             # 1. Analyze reference PR
             print(f"🔍 Analyzing reference PR: {reference_pr_url}")
             pr_analysis = self.analyze_reference_pr(reference_pr_url)
 
             if "error" in pr_analysis:
                 return {"status": "error", "message": pr_analysis["error"]}
-
             print("Reference PR analysis completed")
 
             # 2. Generate translation file path and branch name
@@ -483,7 +571,7 @@ Documentation maintainers
                 self.user_repo,
                 target_filepath,
                 commit_message,
-                translated_doc,
+                translated_doc_content, # Pass the read content
                 branch_name,
             )
 
