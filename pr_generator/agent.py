@@ -8,6 +8,7 @@ import os
 import re
 import json
 from typing import Optional, Dict, List, Tuple, Any
+from github import Github
 
 # Load environment variables from .env file
 from dotenv import load_dotenv
@@ -21,15 +22,16 @@ DEFAULT_TEMPERATURE = 0.0
 
 # Library imports and error handling
 try:
-    from github import Github, GithubException
     from github.GitRef import GitRef
     from langchain_anthropic import ChatAnthropic
 
     REQUIRED_LIBS_AVAILABLE = True
 except ImportError as e:
-    print(f"Required libraries are not installed: {e}")
+    print(f"DEBUG: ImportError in agent.py: {e}")
     print("Please run: pip install PyGithub boto3 langchain-anthropic")
     REQUIRED_LIBS_AVAILABLE = False
+
+print(f"DEBUG: REQUIRED_LIBS_AVAILABLE in agent.py: {REQUIRED_LIBS_AVAILABLE}")
 
 
 class GitHubPRAgent:

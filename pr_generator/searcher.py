@@ -7,6 +7,8 @@ import os
 import re
 import logging
 from typing import List, Dict, Any, Optional
+from github import Github
+from langchain_core.tools import StructuredTool
 
 # Load environment variables
 from dotenv import load_dotenv
@@ -22,15 +24,17 @@ logger = logging.getLogger(__name__)
 # Langchain imports
 try:
     from langchain_anthropic import ChatAnthropic
-    from langchain.tools import StructuredTool
-    from langchain.agents import AgentExecutor, create_tool_calling_agent
+    from langchain_classic.agents import AgentExecutor
+    from langchain.agents import create_tool_calling_agent
     from langchain_core.prompts import ChatPromptTemplate
-    from github import Github
 
     REQUIRED_LIBS_AVAILABLE = True
 except ImportError as e:
-    print(f"Required libraries are not installed: {e}")
+    print(f"DEBUG: ImportError in searcher.py: {e}")
+    print("Please run: pip install PyGithub boto3 langchain-anthropic")
     REQUIRED_LIBS_AVAILABLE = False
+
+print(f"DEBUG: REQUIRED_LIBS_AVAILABLE in searcher.py: {REQUIRED_LIBS_AVAILABLE}")
 
 # Constants
 ANTHROPIC_MODEL_ID = "claude-sonnet-4-20250514"
