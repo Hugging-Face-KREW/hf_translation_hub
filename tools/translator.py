@@ -363,4 +363,4 @@ def create_mcp_interface():
 
 if __name__ == "__main__":
     demo = create_mcp_interface()
-    demo.launch()
+    demo.launch(mcp_server=True)
