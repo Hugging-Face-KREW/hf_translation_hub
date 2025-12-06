@@ -2,7 +2,7 @@ name: Deploy to HF Space
 
 on:
   push:
-    branches: [main]
+    branches: [mcp/docs-search-review]
   workflow_dispatch:
 
 jobs:
