@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import argparse
 import os
-
 import gradio as gr
 
 from services import get_available_projects, LANGUAGE_CHOICES
@@ -11,15 +9,17 @@ from setting import SETTINGS
 
 
 def ensure_mcp_support() -> None:
-    """Verify that ``gradio[mcp]`` is installed and enable the MCP server flag."""
+    """Verify that `gradio[mcp]` is installed and enable the MCP server flag."""
     try:
         import gradio.mcp  # noqa: F401
-    except ImportError as exc:  # pragma: no cover - runtime guard
+    except ImportError as exc:
         raise RuntimeError("Install gradio[mcp] before launching this module.") from exc
+
     os.environ.setdefault("GRADIO_MCP_SERVER", "true")
+    os.environ.setdefault("GRADIO_SHOW_API", "true")
 
 
-def build_demo() -> gr.Blocks:
+def build_ui() -> gr.Blocks:
     """Create a lightweight Gradio Blocks UI for exercising the MCP tools."""
     projects = get_available_projects()
     languages = LANGUAGE_CHOICES[:]
@@ -32,12 +32,12 @@ def build_demo() -> gr.Blocks:
             catalog_output = gr.JSON(label="catalog")
             gr.Button("Fetch").click(
                 fn=list_projects,
-                inputs=[],  # 인자 없음
+                inputs=[],
                 outputs=catalog_output,
                 api_name="translation_project_catalog",
             )
 
-        # --- 2) File search (report + candidates) ---
+        # --- 2) File search ---
         with gr.Tab("File search"):
             project_input = gr.Dropdown(
                 choices=projects,
@@ -96,57 +96,14 @@ def build_demo() -> gr.Blocks:
     return demo
 
 
-def _parse_args(argv=None) -> argparse.Namespace:
-    """Parse CLI arguments used for local or Space deployments."""
-    parser = argparse.ArgumentParser(description="Launch the translation MCP demo.")
+ensure_mcp_support()
 
-    parser.add_argument(
-        "--as-space",
-        action="store_true",
-        help="Use Hugging Face Space defaults.",
-    )
-    parser.add_argument(
-        "--share",
-        action="store_true",
-        help="Create a public share link.",
-    )
-    parser.add_argument(
-        "--no-queue",
-        dest="queue",
-        action="store_false",
-        help="Disable the request queue.",
-    )
-    parser.set_defaults(queue=True)
+ui = build_ui()
 
-    return parser.parse_args(argv)
-
-
-def main(argv=None) -> None:
-    """Launch the Gradio app with MCP server support enabled."""
-    args = _parse_args(argv)
-
-    ensure_mcp_support()
-
-    launch_kwargs = {"mcp_server": True}
-
-    if args.as_space or os.environ.get("SPACE_ID"):
-        launch_kwargs.update(
-            {
-                "server_name": "0.0.0.0",
-                "server_port": int(os.environ.get("PORT", "7860")),
-                "show_api": False,
-            }
-        )
-    else:
-        launch_kwargs["show_api"] = True
-
-    if args.share:
-        launch_kwargs["share"] = True
-
-    demo = build_demo()
-    app = demo.queue() if args.queue else demo
-    app.launch(**launch_kwargs)
-
-
-if __name__ == "__main__":  # pragma: no cover - manual execution helper
-    main()
+ui.launch(
+    server_name="0.0.0.0",
+    server_port=int(os.environ.get("PORT", "7860")),
+    share=False,
+    show_api=True,
+    mcp_server=True
+)
