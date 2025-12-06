@@ -1,0 +1,11 @@
+provider:
+  default: "openai"
+  model: "gpt-5"
+
+github:
+  api_base: "https://api.github.com"
+
+ui:
+  title: "LLM Translation Reviewer (PR) — MCP Tools"
+  share: true
+  launch_mcp_server: true

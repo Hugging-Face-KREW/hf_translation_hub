@@ -1,0 +1,13 @@
+[project]
+name = "translation-file-explorer-mcp"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = [
+  "gradio[mcp]>=5.33.0",
+  "pydantic>=2.7.0",
+  "requests>=2.31.0",
+  "pyyaml>=6.0.1",
+]
+
+[tool.ruff]
+line-length = 100

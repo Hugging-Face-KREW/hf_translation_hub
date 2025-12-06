@@ -1,0 +1,14 @@
+# Core dependencies
+requests>=2.31.0
+gradio>=5.0.0
+
+# LLM providers (optional, choose what you use)
+openai>=1.12.0
+anthropic>=0.34.0
+google-generativeai>=0.5.0
+
+# Typing helpers (optional, for static analysis)
+typing-extensions>=4.8.0
+
+# Python version note
+# Python >=3.9 recommended

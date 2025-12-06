@@ -1,0 +1,10 @@
+github:
+  token: ""                 # 기본값: 환경변수 GITHUB_TOKEN 사용 권장
+  request_timeout_seconds: 30
+
+translation:
+  default_language: "ko"    # 기본 타겟 언어
+  default_limit: 5          # 기본 검색/누락 파일 개수
+
+ui:
+  title: "Translation Docs Search MCP Server"
