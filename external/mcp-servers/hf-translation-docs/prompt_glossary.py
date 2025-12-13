@@ -1,0 +1,126 @@
+PROMPT_WITH_GLOSSARY = """
+You have a glossary of terms with their Korean translations. When translating a sentence, you need to check if any of the words in the sentence are in the glossary, and if so, translate them according to the provided Korean terms. Here is the glossary:
+
+🔹 Glossary (English → Korean):
+- revision: 개정
+- method: 메소드
+- secrets: 비밀값
+- search helper: 검색 헬퍼
+- logging level: 로그 레벨
+- workflow: 워크플로우
+- corner case: 코너 케이스
+- tokenization: 토큰화
+- architecture: 아키텍처
+- attention mask: 어텐션 마스크
+- backbone: 백본
+- argmax: argmax
+- beam search: 빔 서치
+- clustering: 군집화
+- configuration: 구성
+- context: 문맥
+- cross entropy: 교차 엔트로피
+- cross-attention: 크로스 어텐션
+- dictionary: 딕셔너리
+- entry: 엔트리
+- few shot: 퓨샷
+- flatten: 평탄화
+- ground truth: 정답
+- head: 헤드
+- helper function: 헬퍼 함수
+- image captioning: 이미지 캡셔닝
+- image patch: 이미지 패치
+- inference: 추론
+- instance: 인스턴스
+- Instantiate: 인스턴스화
+- knowledge distillation: 지식 증류
+- labels: 레이블
+- large language models (LLM): 대규모 언어 모델
+- layer: 레이어
+- learning rate scheduler: Learning Rate Scheduler
+- localization: 로컬리제이션
+- log mel-filter bank: 로그 멜 필터 뱅크
+- look-up table: 룩업 테이블
+- loss function: 손실 함수
+- machine learning: 머신 러닝
+- mapping: 매핑
+- masked language modeling (MLM): 마스크드 언어 모델
+- malware: 악성코드
+- metric: 지표
+- mixed precision: 혼합 정밀도
+- modality: 모달리티
+- monolingual model: 단일 언어 모델
+- multi gpu: 다중 GPU
+- multilingual model: 다국어 모델
+- parsing: 파싱
+- perplexity (PPL): 펄플렉서티(Perplexity)
+- pipeline: 파이프라인
+- pixel values: 픽셀 값
+- pooling: 풀링
+- position IDs: 위치 ID
+- preprocessing: 전처리
+- prompt: 프롬프트
+- pythonic: 파이써닉
+- query: 쿼리
+- question answering: 질의 응답
+- raw audio waveform: 원시 오디오 파형
+- recurrent neural network (RNN): 순환 신경망
+- accelerator: 가속기
+- Accelerate: Accelerate
+- architecture: 아키텍처
+- arguments: 인수
+- attention mask: 어텐션 마스크
+- augmentation: 증강
+- autoencoding models: 오토인코딩 모델
+- autoregressive models: 자기회귀 모델
+- backward: 역방향
+- bounding box: 바운딩 박스
+- causal language modeling: 인과적 언어 모델링(causal language modeling)
+- channel: 채널
+- checkpoint: 체크포인트(checkpoint)
+- chunk: 묶음
+- computer vision: 컴퓨터 비전
+- convolution: 합성곱
+- crop: 자르기
+- custom: 사용자 정의
+- customize: 맞춤 설정하다
+- data collator: 데이터 콜레이터
+- dataset: 데이터 세트
+- decoder input IDs: 디코더 입력 ID
+- decoder models: 디코더 모델
+- deep learning (DL): 딥러닝
+- directory: 디렉터리
+- distributed training: 분산 학습
+- downstream: 다운스트림
+- encoder models: 인코더 모델
+- entity: 개체
+- epoch: 에폭
+- evaluation method: 평가 방법
+- feature extraction: 특성 추출
+- feature matrix: 특성 행렬(feature matrix)
+- fine-tunning: 미세 조정
+- finetuned models: 미세 조정 모델
+- hidden state: 은닉 상태
+- hyperparameter: 하이퍼파라미터
+- learning: 학습
+- load: 가져오다
+- method: 메소드
+- optimizer: 옵티마이저
+- pad (padding): 패드 (패딩)
+- parameter: 매개변수
+- pretrained model: 사전훈련된 모델
+- separator (* [SEP]를 부르는 이름): 분할 토큰
+- sequence: 시퀀스
+- silent error: 조용한 오류
+- token: 토큰
+- tokenizer: 토크나이저
+- training: 훈련
+- workflow: 워크플로우
+
+📌 Instructions:
+1. Whenever a source term from the glossary appears **in any form** (full match or partial match within a larger phrase), **replace it with the exact Korean translation** from the glossary, keeping the rest of the phrase in Korean.
+   - Example: “Attention Interface” → “어텐션 인터페이스”
+   - Example: “Architecture details” → “아키텍처 상세”
+2. Non-glossary words should be translated naturally, respecting context and technical nuance.
+
+Please revise the translated sentences accordingly using the terms provided in this glossary.
+"""
