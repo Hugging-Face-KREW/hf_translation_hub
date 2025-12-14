@@ -5,14 +5,12 @@ import re
 import textwrap
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
-
 from urllib.parse import urlparse
 
 import requests
-
 from setting import SETTINGS
-from adapters import github_request, fetch_file_from_pr, dispatch_review
 
+from adapters import github_request, fetch_file_from_pr, dispatch_review, resolve_github_token
 
 PROMPT_TEMPLATE = textwrap.dedent(
     """
@@ -59,19 +57,21 @@ PROMPT_TEMPLATE = textwrap.dedent(
 
 # --------------------- Core helpers ------------------
 
-
 def parse_pr_url(pr_url: str) -> Tuple[str, int]:
     """Extract repo (owner/name) and PR number from a GitHub PR URL."""
     if not pr_url:
         raise ValueError("PR URL is required")
+
     parsed = urlparse(pr_url)
     parts = [p for p in parsed.path.split("/") if p]
     # Expect: [owner, repo, 'pull', pr_number, ...]
     if len(parts) < 4 or parts[2] != "pull":
         raise ValueError(f"Not a valid GitHub PR URL: {pr_url}")
+
     owner, repo, _, num = parts[0], parts[1], parts[2], parts[3]
     if not num.isdigit():
         raise ValueError(f"PR number not found in URL: {pr_url}")
+
     return f"{owner}/{repo}", int(num)
 
 
@@ -86,11 +86,16 @@ def load_pr_files(
     translated_path: str,
 ) -> Tuple[str, int, str, str]:
     repo_name, pr_number = parse_pr_url(pr_url)
+
     pr_api = f"{SETTINGS.github_api_base}/repos/{repo_name}/pulls/{pr_number}"
     pr_data = github_request(pr_api, github_token)
+
     head_sha = pr_data.get("head", {}).get("sha")
     if not head_sha:
-        raise RuntimeError(f"Unable to determine head SHA for PR {pr_number} in {repo_name}.")
+        raise RuntimeError(
+            f"Unable to determine head SHA for PR {pr_number} in {repo_name}."
+        )
+
     original = fetch_file_from_pr(repo_name, pr_number, original_path, head_sha, github_token)
     translated = fetch_file_from_pr(repo_name, pr_number, translated_path, head_sha, github_token)
     return repo_name, pr_number, original, translated
@@ -106,6 +111,7 @@ def build_messages(
         "You are an expert translation reviewer ensuring clarity, accuracy, "
         "and readability of localized documentation."
     )
+
     user_prompt = (
         f"{PROMPT_TEMPLATE}\n\n"
         "----- ORIGINAL TEXT -----\n"
@@ -115,6 +121,7 @@ def build_messages(
         "----- TRANSLATED TEXT WITH LINE NUMBERS -----\n"
         f"{add_line_numbers(translated)}"
     )
+
     return system_prompt, user_prompt
 
 
@@ -141,21 +148,24 @@ def normalize_summary_for_body(summary: str) -> str:
 
 # ----------------------- Parsing & GitHub glue ----------------------
 
-
 def _extract_json_candidates(raw_response: str) -> List[str]:
     candidates: List[str] = []
+
     for match in re.finditer(r"```(?:json)?\s*(\{.*?\})\s*```", raw_response, re.DOTALL):
         snippet = match.group(1).strip()
         if snippet:
             candidates.append(snippet)
+
     stripped = raw_response.strip()
     if stripped:
         candidates.append(stripped)
+
     return candidates
 
 
 def parse_review_response(raw_response: str) -> Tuple[str, str, List[Dict[str, object]]]:
     parsed: Optional[Dict[str, object]] = None
+
     for candidate in _extract_json_candidates(raw_response):
         try:
             parsed_candidate = json.loads(candidate)
@@ -164,11 +174,12 @@ def parse_review_response(raw_response: str) -> Tuple[str, str, List[Dict[str, o
         if isinstance(parsed_candidate, dict):
             parsed = parsed_candidate
             break
+
     if parsed is None:
         return "comment", raw_response.strip(), []
 
     verdict = parsed.get("verdict", "comment")
-    summary = parsed.get("summary", "").strip()
+    summary = str(parsed.get("summary", "")).strip()
     comments = parsed.get("comments", [])
 
     if not isinstance(verdict, str):
@@ -187,14 +198,17 @@ def parse_review_response(raw_response: str) -> Tuple[str, str, List[Dict[str, o
     for comment in comments:
         if not isinstance(comment, dict):
             continue
+
         line = comment.get("line")
-        issue = comment.get("issue", "").strip()
-        suggested_edit = comment.get("suggested_edit", "").strip()
-        context = comment.get("context", "").strip()
+        issue = str(comment.get("issue", "")).strip()
+        suggested_edit = str(comment.get("suggested_edit", "")).strip()
+        context = str(comment.get("context", "")).strip()
+
         if not isinstance(line, int) or line <= 0:
             continue
         if not issue:
             continue
+
         normalized_comments.append(
             {
                 "line": line,
@@ -203,6 +217,7 @@ def parse_review_response(raw_response: str) -> Tuple[str, str, List[Dict[str, o
                 "context": context,
             }
         )
+
     return verdict, summary, normalized_comments
 
 
@@ -219,14 +234,17 @@ def build_review_comments(
     comments: List[Dict[str, object]],
 ) -> List[Dict[str, object]]:
     review_comments: List[Dict[str, object]] = []
+
     for comment in comments:
         line = int(comment["line"])
         issue = str(comment["issue"]).strip()
+
         raw_suggested = comment.get("suggested_edit", "")
         if isinstance(raw_suggested, str):
             suggested_edit = raw_suggested.rstrip("\r\n")
         else:
             suggested_edit = str(raw_suggested).rstrip("\r\n") if raw_suggested else ""
+
         context = str(comment.get("context", "")).rstrip("\n")
         full_line_suggestion = suggested_edit.rstrip("\n") if suggested_edit else ""
 
@@ -237,6 +255,7 @@ def build_review_comments(
             body_parts.append("```suggestion\n" + full_line_suggestion + "\n```")
 
         body = "\n\n".join(body_parts).strip()
+
         review_comments.append(
             {
                 "path": translated_path,
@@ -245,6 +264,7 @@ def build_review_comments(
                 "body": body,
             }
         )
+
     return review_comments
 
 
@@ -254,14 +274,17 @@ def attach_translated_line_context(
 ) -> None:
     if not comments:
         return
+
     lines = translated_text.splitlines()
     for comment in comments:
         line_idx = comment.get("line")
         if not isinstance(line_idx, int):
             continue
+
         list_index = line_idx - 1
         if list_index < 0 or list_index >= len(lines):
             continue
+
         current_line = lines[list_index].rstrip("\n")
         if not comment.get("context"):
             comment["context"] = current_line
@@ -290,6 +313,8 @@ def submit_pr_review(
     """
     GitHub PR 리뷰 전송 (self-review REQUEST_CHANGES 우회 포함).
     """
+    github_token = resolve_github_token(github_token)
+
     url = f"{SETTINGS.github_api_base}/repos/{repo_name}/pulls/{pr_number}/reviews"
     headers = {
         "Accept": "application/vnd.github.v3+json",
@@ -297,20 +322,14 @@ def submit_pr_review(
     }
 
     def _post(event_to_use: str, body_to_use: str) -> requests.Response:
-        payload = build_github_review_payload(
-            body=body_to_use,
-            event=event_to_use,
-            comments=comments,
-        )
+        payload = build_github_review_payload(body=body_to_use, event=event_to_use, comments=comments)
         return requests.post(url, headers=headers, json=payload, timeout=30)
 
     # 1차 요청
     response = _post(event, body)
 
     if response.status_code == 401:
-        raise PermissionError(
-            "GitHub token is invalid or lacks permission to submit a review."
-        )
+        raise PermissionError("GitHub token is invalid or lacks permission to submit a review.")
 
     # 본인 PR + REQUEST_CHANGES 케이스 처리
     if response.status_code == 422 and event == "REQUEST_CHANGES":
@@ -318,6 +337,7 @@ def submit_pr_review(
             error_payload = response.json()
         except ValueError:
             error_payload = {"message": response.text}
+
         message = str(error_payload.get("message", ""))
         errors = " ".join(str(item) for item in error_payload.get("errors", []))
         combined_error = f"{message} {errors}".strip()
@@ -351,7 +371,6 @@ def submit_pr_review(
 
 # --------------------- High-level domain services ------------------
 
-
 def prepare_translation_context(
     github_token: str,
     pr_url: str,
@@ -367,12 +386,14 @@ def prepare_translation_context(
         original_path=original_path,
         translated_path=translated_path,
     )
+
     system_prompt, user_prompt = build_messages(
         original=original,
         translated=translated,
         pr_number=pr_number,
         pr_url=pr_url,
     )
+
     return {
         "repo": repo_name,
         "pr_number": pr_number,
@@ -396,6 +417,7 @@ def review_and_emit_payload(
     LLM 리뷰 수행 후 verdict / summary / comments 및 GitHub payload 생성.
     """
     _, pr_number = parse_pr_url(pr_url)
+
     system_prompt, user_prompt = build_messages(
         original=original,
         translated=translated,
@@ -410,11 +432,13 @@ def review_and_emit_payload(
         user_prompt=user_prompt,
         model_name=model_name,
     )
+
     verdict, summary, comments = parse_review_response(raw)
     attach_translated_line_context(translated, comments)
 
     event = review_event_from_verdict(verdict)
     github_comments = build_review_comments(translated_path, comments)
+
     payload = build_github_review_payload(
         body=summary,
         event=event,
@@ -480,6 +504,7 @@ def submit_review_to_github(
         comments=comments,
         allow_self_request_changes=allow_self_request_changes,
     )
+
     return {
         "final_event": final_event,
         "response": response,
@@ -505,71 +530,33 @@ def run_end_to_end(
         translated_path=translated_path,
     )
 
-    system_prompt, user_prompt = build_messages(
+    review = review_and_emit_payload(
+        provider=provider,
+        provider_token=provider_token,
+        model_name=model_name,
+        pr_url=pr_url,
+        translated_path=translated_path,
         original=original,
         translated=translated,
-        pr_number=pr_number,
-        pr_url=pr_url,
     )
 
-    raw = dispatch_review(
-        provider=provider,
-        token=provider_token,
-        system_prompt=system_prompt,
-        user_prompt=user_prompt,
-        model_name=model_name,
-    )
-
-    verdict, summary, comments = parse_review_response(raw)
-    attach_translated_line_context(translated, comments)
-
-    body_for_github = normalize_summary_for_body(summary)
-
-    github_comments = build_review_comments(translated_path, comments)
-    event = review_event_from_verdict(verdict)
-    payload = build_github_review_payload(
-        body=body_for_github,
-        event=event,
-        comments=github_comments,
-    )
-
-    saved_file_path: Optional[str] = None
-    if save_review:
-        p = Path(save_path).expanduser()
-        p.write_text(
-            json.dumps(
-                {
-                    "verdict": verdict,
-                    "summary": summary,
-                    "comments": comments,
-                },
-                ensure_ascii=False,
-                indent=2,
-            ),
-            encoding="utf-8",
-        )
-        saved_file_path = str(p)
-
-    submission = None
-    if submit_review_flag:
-        resp, final_event = submit_pr_review(
-            repo_name=repo,
-            pr_number=pr_number,
-            github_token=github_token,
-            body=body_for_github,
-            event=event,
-            comments=github_comments,
-            allow_self_request_changes=True,
-        )
-        submission = {"final_event": final_event, "response": resp}
-
-    return {
+    out: Dict[str, object] = {
         "repo": repo,
         "pr_number": pr_number,
-        "verdict": verdict,
-        "summary": summary,
-        "comments": comments,
-        "payload": payload,
-        "saved_file": saved_file_path,
-        "submission": submission,
+        "review": review,
     }
+
+    if save_review:
+        Path(save_path).write_text(json.dumps(review, ensure_ascii=False, indent=2), encoding="utf-8")
+        out["saved_to"] = save_path
+
+    if submit_review_flag:
+        submission = submit_review_to_github(
+            github_token=github_token,
+            pr_url=pr_url,
+            translated_path=translated_path,
+            payload_or_review=review.get("payload") if isinstance(review.get("payload"), dict) else review,
+        )
+        out["submission"] = submission
+
+    return out

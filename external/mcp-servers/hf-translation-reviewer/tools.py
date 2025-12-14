@@ -11,10 +11,10 @@ from services import (
 
 
 def tool_prepare(
-    github_token: str,
-    pr_url: str,
-    original_path: str,
-    translated_path: str,
+    github_token: str = "",
+    pr_url: str = "",
+    original_path: str = "",
+    translated_path: str = "",
 ) -> Dict[str, object]:
     """
     Tool 1: Fetch Files + Build Prompts
@@ -29,12 +29,12 @@ def tool_prepare(
 
 def tool_review_and_emit(
     provider: str,
-    provider_token: str,
-    model_name: str,
-    pr_url: str,
-    translated_path: str,
-    original: str,
-    translated: str,
+    provider_token: str = "",
+    model_name: str = "",
+    pr_url: str = "",
+    translated_path: str = "",
+    original: str = "",
+    translated: str = "",
 ) -> Dict[str, object]:
     """
     Tool 2: LLM Review + Emit Payload
@@ -51,15 +51,18 @@ def tool_review_and_emit(
 
 
 def tool_submit_review(
-    github_token: str,
-    pr_url: str,
-    translated_path: str,
-    payload_or_review: Dict[str, object],
+    github_token: str = "",
+    pr_url: str = "",
+    translated_path: str = "",
+    payload_or_review: Dict[str, object] = None,  # type: ignore[assignment]
     allow_self_request_changes: bool = True,
 ) -> Dict[str, object]:
     """
     Tool 3: Submit Review
     """
+    if payload_or_review is None:
+        raise ValueError("payload_or_review is required")
+
     return submit_review_to_github(
         github_token=github_token,
         pr_url=pr_url,
@@ -71,12 +74,12 @@ def tool_submit_review(
 
 def tool_end_to_end(
     provider: str,
-    provider_token: str,
-    model_name: str,
-    github_token: str,
-    pr_url: str,
-    original_path: str,
-    translated_path: str,
+    provider_token: str = "",
+    model_name: str = "",
+    github_token: str = "",
+    pr_url: str = "",
+    original_path: str = "",
+    translated_path: str = "",
     save_review: bool = False,
     save_path: str = "review.json",
     submit_review_flag: bool = False,
