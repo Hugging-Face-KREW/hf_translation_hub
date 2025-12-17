@@ -2,7 +2,7 @@ name: Deploy to HF Space
 
 on:
   push:
-    branches: [mcp/docs-search-review]
+    branches: [mcp/pr-review-without-llm]
   workflow_dispatch:
 
 jobs:
@@ -15,7 +15,7 @@ jobs:
         with:
           fetch-depth: 0
           lfs: true
-          ref: mcp/docs-search-review   # 추후 main 수정
+          ref: mcp/pr-review-without-llm   # 추후 main 수정
 
       - name: Setup LFS & migrate images
         run: |
@@ -28,7 +28,7 @@ jobs:
           git commit -m "Add images to LFS tracking" || echo "No changes"
           git add -A
           git diff --cached --quiet || git commit -m "Pre-migrate: commit all changes" || echo "No changes"
-          git lfs migrate import --include="images/**" --include-ref=refs/heads/mcp/docs-search-review # 추후 main 수정
+          git lfs migrate import --include="images/**" --include-ref=refs/heads/mcp/pr-review-without-llm # 추후 main 수정
 
       - name: Deploy to Hugging Face Space
         env:
@@ -37,7 +37,7 @@ jobs:
           HF_SPACE_NAME: ${{ secrets.HF_SPACE_NAME }}
         run: |
           git remote add space https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$HF_SPACE_NAME
-          git push --force space mcp/docs-search-review:main # 추후 main 수정
+          git push --force space mcp/pr-review-without-llm:main # 추후 main 수정
 
   deploy_docs_explorer:
     runs-on: ubuntu-latest
@@ -47,7 +47,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-          ref: mcp/docs-search-review   # 추후 main 수정
+          ref: mcp/pr-review-without-llm   # 추후 main 수정
 
       - name: Push hf-translation-docs-explorer to HF Space
         env:
@@ -68,7 +68,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-          ref: mcp/docs-search-review   # 추후 main 수정
+          ref: mcp/pr-review-without-llm   # 추후 main 수정
 
       - name: Push hf-translation-reviewer to HF Space
         env:

@@ -10,7 +10,7 @@ from urllib.parse import urlparse
 import requests
 from setting import SETTINGS
 
-from adapters import github_request, fetch_file_from_pr, dispatch_review, resolve_github_token
+from adapters import github_request, fetch_file_from_pr, resolve_github_token
 
 PROMPT_TEMPLATE = textwrap.dedent(
     """
@@ -106,11 +106,15 @@ def build_messages(
     translated: str,
     pr_number: int,
     pr_url: str,
+    *,
+    translated_with_line_numbers: Optional[str] = None,
 ) -> Tuple[str, str]:
     system_prompt = (
         "You are an expert translation reviewer ensuring clarity, accuracy, "
         "and readability of localized documentation."
     )
+
+    numbered = translated_with_line_numbers or add_line_numbers(translated)
 
     user_prompt = (
         f"{PROMPT_TEMPLATE}\n\n"
@@ -119,7 +123,7 @@ def build_messages(
         "----- TRANSLATED TEXT -----\n"
         f"{translated}\n\n"
         "----- TRANSLATED TEXT WITH LINE NUMBERS -----\n"
-        f"{add_line_numbers(translated)}"
+        f"{numbered}"
     )
 
     return system_prompt, user_prompt
@@ -387,11 +391,14 @@ def prepare_translation_context(
         translated_path=translated_path,
     )
 
+    translated_with_line_numbers = add_line_numbers(translated)
+
     system_prompt, user_prompt = build_messages(
         original=original,
         translated=translated,
         pr_number=pr_number,
         pr_url=pr_url,
+        translated_with_line_numbers=translated_with_line_numbers,
     )
 
     return {
@@ -399,51 +406,35 @@ def prepare_translation_context(
         "pr_number": pr_number,
         "original": original,
         "translated": translated,
+        "translated_with_line_numbers": translated_with_line_numbers,
         "system_prompt": system_prompt,
         "user_prompt": user_prompt,
     }
 
 
 def review_and_emit_payload(
-    provider: str,
-    provider_token: str,
-    model_name: str,
     pr_url: str,
     translated_path: str,
-    original: str,
     translated: str,
+    raw_review_response: str,
 ) -> Dict[str, object]:
     """
-    LLM 리뷰 수행 후 verdict / summary / comments 및 GitHub payload 생성.
+    Parse the provided LLM review response and build GitHub payload.
     """
-    _, pr_number = parse_pr_url(pr_url)
+    if pr_url:
+        # Validate PR URL format early even though the review response is client-generated.
+        parse_pr_url(pr_url)
 
-    system_prompt, user_prompt = build_messages(
-        original=original,
-        translated=translated,
-        pr_number=pr_number,
-        pr_url=pr_url,
-    )
+    if not raw_review_response.strip():
+        raise ValueError("raw_review_response is required to build a review payload")
 
-    raw = dispatch_review(
-        provider=provider,
-        token=provider_token,
-        system_prompt=system_prompt,
-        user_prompt=user_prompt,
-        model_name=model_name,
-    )
-
-    verdict, summary, comments = parse_review_response(raw)
+    verdict, summary, comments = parse_review_response(raw_review_response)
     attach_translated_line_context(translated, comments)
 
     event = review_event_from_verdict(verdict)
     github_comments = build_review_comments(translated_path, comments)
 
-    payload = build_github_review_payload(
-        body=summary,
-        event=event,
-        comments=github_comments,
-    )
+    payload = build_github_review_payload(body=summary, event=event, comments=github_comments)
 
     return {
         "verdict": verdict,
@@ -512,9 +503,6 @@ def submit_review_to_github(
 
 
 def run_end_to_end(
-    provider: str,
-    provider_token: str,
-    model_name: str,
     github_token: str,
     pr_url: str,
     original_path: str,
@@ -522,6 +510,7 @@ def run_end_to_end(
     save_review: bool = False,
     save_path: str = "review.json",
     submit_review_flag: bool = False,
+    raw_review_response: str = "",
 ) -> Dict[str, object]:
     repo, pr_number, original, translated = load_pr_files(
         github_token=github_token,
@@ -530,27 +519,44 @@ def run_end_to_end(
         translated_path=translated_path,
     )
 
-    review = review_and_emit_payload(
-        provider=provider,
-        provider_token=provider_token,
-        model_name=model_name,
-        pr_url=pr_url,
-        translated_path=translated_path,
+    translated_with_line_numbers = add_line_numbers(translated)
+
+    system_prompt, user_prompt = build_messages(
         original=original,
         translated=translated,
+        pr_number=pr_number,
+        pr_url=pr_url,
+        translated_with_line_numbers=translated_with_line_numbers,
     )
 
     out: Dict[str, object] = {
         "repo": repo,
         "pr_number": pr_number,
-        "review": review,
+        "original": original,
+        "translated": translated,
+        "translated_with_line_numbers": translated_with_line_numbers,
+        "system_prompt": system_prompt,
+        "user_prompt": user_prompt,
     }
 
-    if save_review:
+    review: Optional[Dict[str, object]] = None
+    if raw_review_response.strip():
+        review = review_and_emit_payload(
+            pr_url=pr_url,
+            translated_path=translated_path,
+            translated=translated,
+            raw_review_response=raw_review_response,
+        )
+        out["review"] = review
+
+    if save_review and review:
         Path(save_path).write_text(json.dumps(review, ensure_ascii=False, indent=2), encoding="utf-8")
         out["saved_to"] = save_path
 
     if submit_review_flag:
+        if not review:
+            raise ValueError("Cannot submit review without a parsed raw review response.")
+
         submission = submit_review_to_github(
             github_token=github_token,
             pr_url=pr_url,
