@@ -38,6 +38,7 @@ def build_ui() -> gr.Blocks:
                 inputs=[],
                 outputs=catalog_output,
                 api_name="translation_project_catalog",
+                api_description="Fetch the list of projects from the Hugging Face Translation Documentation MCP Server",
             )
 
         # --- 2) File search ---
@@ -68,6 +69,7 @@ def build_ui() -> gr.Blocks:
                 inputs=[project_input, lang_input, limit_input, include_report],
                 outputs=search_output,
                 api_name="translation_file_search",
+                api_description="Search for files that need translation in a Hugging Face project",
             )
 
         # --- 3) Missing docs ---
@@ -94,6 +96,7 @@ def build_ui() -> gr.Blocks:
                 inputs=[missing_project, missing_lang, missing_limit],
                 outputs=missing_output,
                 api_name="translation_missing_list",
+                api_description="List the missing files in a Hugging Face project",
             )
 
         # --- 4) Outdated docs (NEW) ---
@@ -120,6 +123,7 @@ def build_ui() -> gr.Blocks:
                 inputs=[outdated_project, outdated_lang, outdated_limit],
                 outputs=outdated_output,
                 api_name="translation_outdated_list",
+                api_description="List the outdated files in a Hugging Face project",
             )
 
     return demo

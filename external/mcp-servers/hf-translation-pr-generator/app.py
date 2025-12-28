@@ -74,6 +74,7 @@ def build_ui() -> gr.Blocks:
                 inputs=[config_github_token, config_owner, config_repo, config_project],
                 outputs=config_output,
                 api_name="pr_validate_config",
+                api_description="Validate the GitHub PR configuration and settings",
             )
 
         # --- 2) Search Reference PR ---
@@ -94,6 +95,7 @@ def build_ui() -> gr.Blocks:
                 inputs=[search_language, search_context],
                 outputs=search_output,
                 api_name="pr_search_reference",
+                api_description="Search for reference PRs for translation",
             )
 
         # --- 3) Analyze Translation ---
@@ -120,6 +122,7 @@ def build_ui() -> gr.Blocks:
                 inputs=[analyze_filepath, analyze_content, analyze_language, analyze_project],
                 outputs=analyze_output,
                 api_name="pr_analyze_translation",
+                api_description="Analyze the translated content for quality and formatting",
             )
 
         # --- 4) Generate PR Draft ---
@@ -150,6 +153,7 @@ def build_ui() -> gr.Blocks:
                 inputs=[draft_filepath, draft_content, draft_language, draft_reference_pr, draft_project],
                 outputs=draft_output,
                 api_name="pr_generate_draft",
+                api_description="Generate a PR draft for the translated content",
             )
 
         # --- 5) Create GitHub PR ---
@@ -187,6 +191,7 @@ def build_ui() -> gr.Blocks:
                 ],
                 outputs=create_output,
                 api_name="pr_create_github_pr",
+                api_description="Create a GitHub PR with the translated content",
             )
 
     return demo

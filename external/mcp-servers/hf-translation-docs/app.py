@@ -42,6 +42,7 @@ def build_ui() -> gr.Blocks:
                 inputs=[project_input],
                 outputs=config_output,
                 api_name="translation_get_project_config",
+                api_description="Get the project configuration from the Hugging Face Translation Documentation MCP Server",
             )
 
         # --- 2) Search Translation Files ---
@@ -68,6 +69,7 @@ def build_ui() -> gr.Blocks:
                 inputs=[search_project, search_language, search_limit],
                 outputs=search_output,
                 api_name="translation_search_files",
+                api_description="Search for files that need translation in a Hugging Face project",
             )
 
         # --- 3) Get File Content ---
@@ -91,6 +93,7 @@ def build_ui() -> gr.Blocks:
                 inputs=[content_project, content_file_path, content_include_metadata],
                 outputs=content_output,
                 api_name="translation_get_file_content",
+                api_description="Get the content of a file from the Hugging Face Translation Documentation MCP Server",
             )
 
         # --- 4) Generate Translation Prompt ---
@@ -125,6 +128,7 @@ def build_ui() -> gr.Blocks:
                 inputs=[prompt_target_language, prompt_content, prompt_additional, prompt_project, prompt_file_path],
                 outputs=prompt_output,
                 api_name="translation_generate_prompt",
+                api_description="Generate a translation prompt for a given content. After generating the prompt, you can translate the content using the prompt.",
             )
 
         # --- 5) Validate Translation ---
@@ -154,6 +158,7 @@ def build_ui() -> gr.Blocks:
                 inputs=[validate_original, validate_translated, validate_language, validate_file_path],
                 outputs=validate_output,
                 api_name="translation_validate",
+                api_description="Validate the translated content for quality and formatting",
             )
 
         # --- 6) Save Translation Result ---
@@ -183,6 +188,7 @@ def build_ui() -> gr.Blocks:
                 inputs=[save_project, save_original_path, save_content, save_language],
                 outputs=save_output,
                 api_name="translation_save_result",
+                api_description="Save the translation result to the file system",
             )
 
     return demo

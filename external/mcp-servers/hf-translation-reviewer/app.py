@@ -65,7 +65,7 @@ def build_ui() -> gr.Blocks:
         with gr.Accordion(
             "Tool 1: Prepare (Fetch Files + Build Prompts)", open=False
         ):
-            prepare_btn = gr.Button("tool_prepare")
+            prepare_btn = gr.Button("tool_prepare", api_name="translation_prepare", api_description="Fetch files and build prompts for translation review")
             prepare_out = gr.JSON(label="Prepare result (files + prompts)")
 
             def _prepare_proxy(
@@ -93,7 +93,8 @@ def build_ui() -> gr.Blocks:
         # ------------------------------------------------------------------
         with gr.Accordion("Tool 2: Review + Emit Payload", open=False):
             review_btn = gr.Button("tool_review_and_emit")
-
+            review_btn.api_name="translation_review_and_emit"
+            review_btn.api_description="Review the translated content and emit the payload for GitHub PR"
             translated_text = gr.Textbox(
                 label="Translated (for review)",
                 lines=10,
@@ -143,6 +144,8 @@ def build_ui() -> gr.Blocks:
         # ------------------------------------------------------------------
         with gr.Accordion("Tool 3: Submit Review", open=False):
             submit_btn = gr.Button("tool_submit_review")
+            submit_btn.api_name="translation_submit_review"
+            submit_btn.api_description="Submit the review payload to GitHub PR"
             payload_in = gr.Textbox(
                 label="Payload or Review JSON (from Tool 2)",
                 lines=6,
@@ -181,6 +184,8 @@ def build_ui() -> gr.Blocks:
         # ------------------------------------------------------------------
         with gr.Accordion("Tool 4: End-to-End", open=True):
             e2e_btn = gr.Button("tool_end_to_end")
+            e2e_btn.api_name="translation_end_to_end"
+            e2e_btn.api_description="End-to-end translation review and submission"
             save_review = gr.Checkbox(
                 label="Save review JSON to file", value=True
             )
