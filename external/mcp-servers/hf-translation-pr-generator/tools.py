@@ -15,12 +15,25 @@ from services import (
 def validate_pr_config(
     owner: str,
     repo_name: str,
-    project: str
+    project: str,
+    toolCallId: str = ""
 ) -> Dict[str, Any]:
     """
     Validate GitHub PR configuration and settings.
     
     MCP endpoint: pr_validate_config
+
+    Args:
+        owner: The owner of the repository.
+        repo_name: The name of the repository.
+        project: The name of the project.
+        toolCallId: The ID of the tool call.
+
+    Returns:
+        A dictionary containing the validation results.
+
+    Raises:
+        Exception: If the PR configuration cannot be validated.
     """
     try:
         return {
@@ -44,12 +57,24 @@ def validate_pr_config(
 
 def search_reference_pr(
     target_language: str,
-    context: str = "documentation translation"
+    context: str = "documentation translation",
+    toolCallId: str = ""
 ) -> Dict[str, Any]:
     """
     Search for reference PRs using GitHub API.
     
     MCP endpoint: pr_search_reference
+
+    Args:
+        target_language: The target language to search for reference PRs in.
+        context: The context to search for reference PRs in.
+        toolCallId: The ID of the tool call.
+
+    Returns:
+        A dictionary containing the search results.
+
+    Raises:
+        Exception: If the reference PRs cannot be searched for.
     """
     try:
         return {
@@ -74,12 +99,26 @@ def analyze_translation(
     filepath: str,
     translated_content: str,
     target_language: str,
-    project: str = "transformers"
+    project: str = "transformers",
+    toolCallId: str = ""
 ) -> Dict[str, Any]:
     """
     Analyze translated content and generate metadata.
     
     MCP endpoint: pr_analyze_translation
+
+    Args:
+        filepath: The path of the file to analyze.
+        translated_content: The translated content to analyze.
+        target_language: The target language to analyze the content in.
+        project: The name of the project to analyze the content in.
+        toolCallId: The ID of the tool call.
+
+    Returns:
+        A dictionary containing the analysis results.
+
+    Raises:
+        Exception: If the content cannot be analyzed.
     """
     try:
         return {
@@ -107,12 +146,27 @@ def generate_pr_draft(
     translated_content: str,
     target_language: str,
     reference_pr_url: str,
-    project: str = "transformers"
+    project: str = "transformers",
+    toolCallId: str = ""
 ) -> Dict[str, Any]:
     """
     Generate PR draft structure and metadata.
     
     MCP endpoint: pr_generate_draft
+
+    Args:
+        filepath: The path of the file to generate the PR draft for.
+        translated_content: The translated content to generate the PR draft for.
+        target_language: The target language to generate the PR draft for.
+        reference_pr_url: The URL of the reference PR to generate the PR draft for.
+        project: The name of the project to generate the PR draft for.
+        toolCallId: The ID of the tool call.
+
+    Returns:
+        A dictionary containing the PR draft results.
+
+    Raises:
+        Exception: If the PR draft cannot be generated.
     """
     try:
         return {
@@ -149,12 +203,33 @@ def create_github_pr(
     project: str,
     pr_title: str = "",
     pr_description: str = "",
-    metadata: Dict[str, Any] = None
+    metadata: Dict[str, Any] = None,
+    toolCallId: str = ""
 ) -> Dict[str, Any]:
     """
     Create GitHub PR with translated content.
     
     MCP endpoint: pr_create_github_pr
+
+    Args:
+        github_token: The GitHub token to use for the PR.
+        owner: The owner of the repository.
+        repo_name: The name of the repository.
+        filepath: The path of the file to create the PR for.
+        translated_content: The translated content to create the PR for.
+        target_language: The target language to create the PR for.
+        reference_pr_url: The URL of the reference PR to create the PR for.
+        project: The name of the project to create the PR for.
+        pr_title: The title of the PR.
+        pr_description: The description of the PR.
+        metadata: The metadata to use for the PR.
+        toolCallId: The ID of the tool call.
+
+    Returns:
+        A dictionary containing the PR creation results.
+
+    Raises:
+        Exception: If the PR cannot be created.
     """
     try:
         return {

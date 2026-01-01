@@ -21,7 +21,7 @@ def ensure_mcp_support() -> None:
     os.environ.setdefault("GRADIO_SHOW_API", "true")
 
 
-def validate_pr_config_ui(github_token: str, owner: str, repo_name: str, project: str):
+def validate_pr_config_ui(github_token: str, owner: str, repo_name: str, project: str, toolCallId: str = ""):
     """UI wrapper for validate_pr_config that handles token input."""
     # If token provided via UI, temporarily set it in environment
     original_token = None
@@ -31,7 +31,7 @@ def validate_pr_config_ui(github_token: str, owner: str, repo_name: str, project
     
     try:
         # Call the MCP endpoint function (which reads from environment)
-        result = validate_pr_config(owner, repo_name, project)
+        result = validate_pr_config(owner, repo_name, project, toolCallId)
         return result
     finally:
         # Restore original token if we changed it
@@ -68,10 +68,15 @@ def build_ui() -> gr.Blocks:
                 label="Project",
                 value=SETTINGS.default_project,
             )
+            config_toolcallid = gr.Textbox(
+                label="Tool Call ID",
+                value="",
+                visible=False,
+            )
             config_output = gr.JSON(label="Validation Results")
             gr.Button("Validate Config").click(
                 fn=validate_pr_config_ui,
-                inputs=[config_github_token, config_owner, config_repo, config_project],
+                inputs=[config_github_token, config_owner, config_repo, config_project, config_toolcallid],
                 outputs=config_output,
                 api_name="pr_validate_config",
                 api_description="Validate the GitHub PR configuration and settings",
@@ -89,10 +94,15 @@ def build_ui() -> gr.Blocks:
                 value="documentation translation",
                 placeholder="Context for PR search..."
             )
+            search_toolcallid = gr.Textbox(
+                label="Tool Call ID",
+                value="",
+                visible=False,
+            )
             search_output = gr.JSON(label="Search Results")
             gr.Button("Search Reference PR").click(
                 fn=search_reference_pr,
-                inputs=[search_language, search_context],
+                inputs=[search_language, search_context, search_toolcallid],
                 outputs=search_output,
                 api_name="pr_search_reference",
                 api_description="Search for reference PRs for translation",
@@ -116,10 +126,15 @@ def build_ui() -> gr.Blocks:
                 label="Project",
                 value=SETTINGS.default_project,
             )
+            analyze_toolcallid = gr.Textbox(
+                label="Tool Call ID",
+                value="",
+                visible=False,
+            )
             analyze_output = gr.JSON(label="Analysis Results")
             gr.Button("Analyze Translation").click(
                 fn=analyze_translation,
-                inputs=[analyze_filepath, analyze_content, analyze_language, analyze_project],
+                inputs=[analyze_filepath, analyze_content, analyze_language, analyze_project, analyze_toolcallid],
                 outputs=analyze_output,
                 api_name="pr_analyze_translation",
                 api_description="Analyze the translated content for quality and formatting",
@@ -147,10 +162,15 @@ def build_ui() -> gr.Blocks:
                 label="Project",
                 value=SETTINGS.default_project,
             )
+            draft_toolcallid = gr.Textbox(
+                label="Tool Call ID",
+                value="",
+                visible=False,
+            )
             draft_output = gr.JSON(label="PR Draft")
             gr.Button("Generate Draft").click(
                 fn=generate_pr_draft,
-                inputs=[draft_filepath, draft_content, draft_language, draft_reference_pr, draft_project],
+                inputs=[draft_filepath, draft_content, draft_language, draft_reference_pr, draft_project, draft_toolcallid],
                 outputs=draft_output,
                 api_name="pr_generate_draft",
                 api_description="Generate a PR draft for the translated content",
@@ -181,13 +201,33 @@ def build_ui() -> gr.Blocks:
                 label="Project",
                 value=SETTINGS.default_project,
             )
+            create_pr_title = gr.Textbox(
+                label="PR Title (optional)",
+                placeholder="Auto-generated if empty",
+            )
+            create_pr_description = gr.Textbox(
+                label="PR Description (optional)",
+                placeholder="Auto-generated if empty",
+                lines=3,
+            )
+            create_metadata = gr.Textbox(
+                label="Metadata JSON (optional)",
+                placeholder='{"key": "value"}',
+                lines=2,
+            )
+            create_toolcallid = gr.Textbox(
+                label="Tool Call ID",
+                value="",
+                visible=False,
+            )
             create_output = gr.JSON(label="PR Creation Results")
             gr.Button("Create PR").click(
                 fn=create_github_pr,
                 inputs=[
                     create_github_token, create_owner, create_repo,
                     create_filepath, create_content, create_language,
-                    create_reference_pr, create_project
+                    create_reference_pr, create_project, create_pr_title,
+                    create_pr_description, create_metadata, create_toolcallid
                 ],
                 outputs=create_output,
                 api_name="pr_create_github_pr",
