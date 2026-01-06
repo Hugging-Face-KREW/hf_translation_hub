@@ -22,7 +22,6 @@ from tools import (
 
 
 def _error_payload(err: Exception) -> dict:
-    """Return a structured error payload for Gradio / MCP JSON outputs."""
     return {"error": str(err), "type": err.__class__.__name__}
 
 
@@ -30,11 +29,11 @@ def build_ui() -> gr.Blocks:
     with gr.Blocks(title=SETTINGS.ui_title) as demo:
         gr.Markdown(
             "# LLM Translation Reviewer for GitHub PRs (MCP-enabled)\n"
-            "Fetch prompts + files here, run your own LLM client, then paste the response to build review payloads."
+            "You can use tools sequentially or use the end-to-end tool depending on your workflow."
         )
 
         # ------------------------------------------------------------------
-        # Common inputs (UI-only token input; NOT used by MCP tools)
+        # Common inputs
         # ------------------------------------------------------------------
         with gr.Row():
             pr_url = gr.Textbox(
@@ -49,29 +48,23 @@ def build_ui() -> gr.Blocks:
 
         with gr.Row():
             original_path = gr.Textbox(
-                label="Original File Path (in repo)",
-                placeholder="_posts/2025-09-29-building-hf-mcp.md",
+                label="Original File Path",
+                placeholder="docs/source/en/example.md",
             )
             translated_path = gr.Textbox(
-                label="Translated File Path (in repo)",
-                placeholder="_posts/2025-09-29-building-hf-mcp-ko.md",
+                label="Translated File Path",
+                placeholder="docs/source/ko/example.md",
             )
 
         gr.Markdown("---")
 
         # ------------------------------------------------------------------
-        # Tool 1: Prepare (MCP-safe)
+        # Tool 1: Prepare
         # ------------------------------------------------------------------
-        with gr.Accordion(
-            "Tool 1: Prepare (Fetch Files + Build Prompts)", open=False
-        ):
-            prepare_toolcallid = gr.Textbox(
-                label="Tool Call ID",
-                value="",
-                visible=False,
-            )
-            prepare_btn = gr.Button("tool_prepare")
-            prepare_out = gr.JSON(label="Prepare result (files + prompts)")
+        with gr.Accordion("Tool 1: Prepare", open=False):
+            prepare_toolcallid = gr.Textbox(visible=False)
+            prepare_btn = gr.Button("translation_prepare")
+            prepare_out = gr.JSON(label="Prepare result")
 
             def _prepare_proxy(
                 pr_url_: str,
@@ -103,7 +96,6 @@ def build_ui() -> gr.Blocks:
                         pr_url=pr_url_,
                         original_path=original_path_,
                         translated_path=translated_path_,
-                        toolCallId=toolCallId,
                     )
                 except Exception as err:
                     return _error_payload(err)
@@ -113,38 +105,30 @@ def build_ui() -> gr.Blocks:
                 inputs=[pr_url, original_path, translated_path, prepare_toolcallid],
                 outputs=[prepare_out],
                 api_name="translation_prepare",
-                api_description="Fetch files and build prompts for translation review",
             )
 
         # ------------------------------------------------------------------
-        # Tool 2: Review + Emit Payload (token not required)
+        # Tool 2: Review + Emit
         # ------------------------------------------------------------------
-        with gr.Accordion("Tool 2: Review + Emit Payload", open=False):
+        with gr.Accordion("Tool 2: Review + Emit", open=False):
             translated_text = gr.Textbox(
-                label="Translated (for review)",
+                label="Translated text (full file content)",
                 lines=10,
             )
             raw_response = gr.Textbox(
-                label="LLM review response (from your client)",
+                label="LLM review JSON",
                 lines=10,
-                placeholder="Paste the JSON/text returned by your LLM here",
             )
-            review_toolcallid = gr.Textbox(
-                label="Tool Call ID",
-                value="",
-                visible=False,
-            )
-            review_btn = gr.Button("tool_review_and_emit")
+            review_toolcallid = gr.Textbox(visible=False)
+            review_btn = gr.Button("translation_review_and_emit")
 
-            review_out = gr.JSON(
-                label="Review result (verdict/summary/comments/event)"
-            )
-            payload_out = gr.JSON(label="Payload JSON (for GitHub)")
+            review_out = gr.JSON(label="Review result")
+            payload_out = gr.JSON(label="GitHub payload")
 
             def _review_emit_proxy(
                 pr_url_: str,
                 translated_path_: str,
-                translated_text_: str,
+                translated: str,
                 raw_response_: str,
                 toolCallId: str = "",
             ):
@@ -157,7 +141,7 @@ def build_ui() -> gr.Blocks:
                 Args:
                     pr_url_: The URL of the GitHub PR.
                     translated_path_: The path to the translated file.
-                    translated_text_: The translated text content.
+                    translated: The translated text content.
                     raw_response_: The raw response from the LLM reviewer (JSON/text).
                     toolCallId: Optional tool call ID for tracking.
 
@@ -171,9 +155,8 @@ def build_ui() -> gr.Blocks:
                     result = tool_review_and_emit(
                         pr_url=pr_url_,
                         translated_path=translated_path_,
-                        translated=translated_text_,
+                        translated=translated,
                         raw_review_response=raw_response_,
-                        toolCallId=toolCallId,
                     )
                     return result, result.get("payload", {})
                 except Exception as err:
@@ -191,23 +174,18 @@ def build_ui() -> gr.Blocks:
                 ],
                 outputs=[review_out, payload_out],
                 api_name="translation_review_and_emit",
-                api_description="Review the translated content and emit the payload for GitHub PR",
             )
 
         # ------------------------------------------------------------------
-        # Tool 3: Submit Review (MCP-safe)
+        # Tool 3: Submit Review
         # ------------------------------------------------------------------
         with gr.Accordion("Tool 3: Submit Review", open=False):
             payload_in = gr.Textbox(
-                label="Payload or Review JSON (from Tool 2)",
+                label="Payload JSON",
                 lines=6,
             )
-            submit_toolcallid = gr.Textbox(
-                label="Tool Call ID",
-                value="",
-                visible=False,
-            )
-            submit_btn = gr.Button("tool_submit_review")
+            submit_toolcallid = gr.Textbox(visible=False)
+            submit_btn = gr.Button("translation_submit_review")
             submit_out = gr.JSON(label="Submission result")
 
             def _submit_proxy(
@@ -244,7 +222,6 @@ def build_ui() -> gr.Blocks:
                         pr_url=pr_url_,
                         translated_path=translated_path_,
                         payload_or_review=payload_obj,
-                        toolCallId=toolCallId,
                     )
                 except Exception as err:
                     return _error_payload(err)
@@ -254,34 +231,31 @@ def build_ui() -> gr.Blocks:
                 inputs=[pr_url, translated_path, payload_in, submit_toolcallid],
                 outputs=[submit_out],
                 api_name="translation_submit_review",
-                api_description="Submit the review payload to GitHub PR",
             )
 
-        gr.Markdown("---")
-
         # ------------------------------------------------------------------
-        # Tool 4: End-to-End (MCP-safe)
+        # Tool 4: End-to-End (ENABLED)
         # ------------------------------------------------------------------
         with gr.Accordion("Tool 4: End-to-End", open=True):
             save_review = gr.Checkbox(
-                label="Save review JSON to file", value=True
+                label="Save review JSON to file",
+                value=False,
             )
             save_path = gr.Textbox(
-                label="Save path", value="review.json"
+                label="Save path",
+                value="review.json",
             )
             submit_flag = gr.Checkbox(
-                label="Submit to GitHub", value=False
+                label="Submit to GitHub",
+                value=False,
             )
             e2e_raw_response = gr.Textbox(
-                label="LLM review response (optional)",
+                label="LLM review JSON (optional)",
                 lines=6,
+                placeholder="If empty, e2e will only prepare context and prompts.",
             )
-            e2e_toolcallid = gr.Textbox(
-                label="Tool Call ID",
-                value="",
-                visible=False,
-            )
-            e2e_btn = gr.Button("tool_end_to_end")
+            e2e_toolcallid = gr.Textbox(visible=False)
+            e2e_btn = gr.Button("translation_end_to_end")
             e2e_out = gr.JSON(label="E2E result")
 
             def _e2e_proxy(
@@ -291,7 +265,7 @@ def build_ui() -> gr.Blocks:
                 save_review_: bool,
                 save_path_: str,
                 submit_flag_: bool,
-                e2e_raw_response_: str,
+                raw_review_response_: str,
                 toolCallId: str = "",
             ):
                 """
@@ -304,7 +278,7 @@ def build_ui() -> gr.Blocks:
                     save_review_: Whether to save the review as a JSON file.
                     save_path_: The file path to save the review JSON.
                     submit_flag_: Whether to submit the review to GitHub.
-                    e2e_raw_response_: The raw LLM review response (optional).
+                    raw_review_response_: The raw LLM review response (optional).
                     toolCallId: The ID of the tool call (optional).
 
                 Returns:
@@ -318,8 +292,7 @@ def build_ui() -> gr.Blocks:
                         save_review=save_review_,
                         save_path=save_path_,
                         submit_review_flag=submit_flag_,
-                        raw_review_response=e2e_raw_response_,
-                        toolCallId=toolCallId,
+                        raw_review_response=raw_review_response_,
                     )
                 except Exception as err:
                     return _error_payload(err)
@@ -338,15 +311,15 @@ def build_ui() -> gr.Blocks:
                 ],
                 outputs=[e2e_out],
                 api_name="translation_end_to_end",
-                api_description="End-to-end translation review and submission",
             )
 
         gr.Markdown(
             """
             **Notes**
-            - MCP-exposed tools do NOT accept authentication parameters.
-            - GitHub credentials are resolved internally via environment variables / Space secrets.
-            - UI token input is kept for local or UI-only flows, not for MCP.
+            - End-to-end(e2e) tool is enabled.
+            - For n8n workflows, prefer:
+              `translation_prepare → LLM → translation_review_and_emit → translation_submit_review`.
+            - e2e is best used as a convenience wrapper or inspection tool.
             """
         )
 
