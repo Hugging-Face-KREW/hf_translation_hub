@@ -72,6 +72,25 @@ def build_ui() -> gr.Blocks:
                 translated_path_: str,
                 toolCallId: str = "",
             ):
+                """
+                Fetch files from GitHub PR and build translation review prompts.
+
+                MCP-safe:
+                - Does NOT accept github_token as an argument
+                - Token is resolved internally from environment / secrets
+
+                Args:
+                    pr_url_: The URL of the GitHub PR.
+                    original_path_: The path of the original file.
+                    translated_path_: The path of the translated file.
+                    toolCallId: The ID of the tool call.
+
+                Returns:
+                    A dictionary containing the translation review results.
+
+                Raises:
+                    Exception: If the translation review cannot be prepared.
+                """
                 try:
                     return tool_prepare(
                         pr_url=pr_url_,
@@ -113,6 +132,25 @@ def build_ui() -> gr.Blocks:
                 raw_response_: str,
                 toolCallId: str = "",
             ):
+                """
+                Review and emit payload for translation review.
+                - Takes the PR URL, path to translated file, the translated text, and the LLM's raw review response.
+                - Calls the review tool to parse and analyze the translation.
+                - Emits both the review result and the payload JSON for GitHub PR submission.
+
+                Args:
+                    pr_url_: The URL of the GitHub PR.
+                    translated_path_: The path to the translated file.
+                    translated: The translated text content.
+                    raw_response_: The raw response from the LLM reviewer (JSON/text).
+                    toolCallId: Optional tool call ID for tracking.
+
+                Returns:
+                    Tuple containing:
+                        - Review result (dict): Includes verdict, summary, comments, etc.
+                        - Payload JSON (dict): Structured payload ready for GitHub PR API.
+                """
+
                 try:
                     result = tool_review_and_emit(
                         pr_url=pr_url_,
@@ -156,6 +194,24 @@ def build_ui() -> gr.Blocks:
                 payload_json_: str,
                 toolCallId: str = "",
             ):
+                """
+                Submit review payload to GitHub PR.
+
+                MCP-safe:
+                - Token resolved internally
+
+                Args:
+                    pr_url_: The URL of the GitHub PR.
+                    translated_path_: The path of the translated file.
+                    payload_json_: The payload or review to submit (as a JSON string).
+                    toolCallId: The ID of the tool call.
+
+                Returns:
+                    A dictionary containing the review submission results.
+
+                Raises:
+                    Exception: If the review cannot be submitted.
+                """
                 try:
                     payload_obj = json.loads(payload_json_) if payload_json_ else {}
                 except Exception as e:
@@ -212,6 +268,22 @@ def build_ui() -> gr.Blocks:
                 raw_review_response_: str,
                 toolCallId: str = "",
             ):
+                """
+                Runs the end-to-end tool: fetches files, builds prompts, parses LLM response, and optionally saves and/or submits the review.
+
+                Args:
+                    pr_url_: The URL of the GitHub PR.
+                    original_path_: The path of the original file.
+                    translated_path_: The path of the translated file.
+                    save_review_: Whether to save the review as a JSON file.
+                    save_path_: The file path to save the review JSON.
+                    submit_flag_: Whether to submit the review to GitHub.
+                    raw_review_response_: The raw LLM review response (optional).
+                    toolCallId: The ID of the tool call (optional).
+
+                Returns:
+                    A dictionary containing the end-to-end execution results.
+                """
                 try:
                     return tool_end_to_end(
                         pr_url=pr_url_,
