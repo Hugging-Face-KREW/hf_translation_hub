@@ -15,7 +15,7 @@ jobs:
         with:
           fetch-depth: 0
           lfs: true
-          ref: fix/pr-review-mcp-tool-idh   # 추후 main 수정
+          ref: fix/pr-review-mcp-tool-id   # 추후 main 수정
 
       - name: Setup LFS & migrate images
         run: |
