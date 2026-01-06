@@ -1,32 +1,26 @@
 ---
-title: i18n Agent - Contribute in Just 5 Minutes
+title: hf-translation-hub MCP Servers
 emoji: 🤗
 colorFrom: yellow
 colorTo: yellow
-sdk: gradio
-sdk_version: 5.33.1
-app_file: app.py
 pinned: false
 ---
 
-
 <div align="center">
 
-# 🌐 [i18n-agent] Hugging Face i18n made easy
+# 🌐 Hugging Face Translation Hub – MCP Servers
+<img width="4175" height="2156" alt="image" src="https://github.com/user-attachments/assets/643135f8-93a8-49ff-afb1-5024a004ef8f" />
+<img width="1042" height="670" alt="image" src="https://github.com/user-attachments/assets/607a6cbb-cf8f-411d-9321-73b865434f94" />
 
-*AI-powered translation agent for Hugging Face Transformers documentation internationalization*
+*Composable Model Context Protocol (MCP) servers for Hugging Face documentation translation*
 
-[![Hugging Face Spaces](https://img.shields.io/badge/🤗%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/Agents-MCP-Hackathon/hf-transformers-docs-i18n-agent)
-[![agent-demo-track](https://img.shields.io/badge/🤖-agent--demo--track-ff6b6b)](https://github.com/topics/agent-demo-track)
+![Hugging Face](https://img.shields.io/badge/🤗-Hugging%20Face-yellow)
+![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-blue)
 
-![KREW x Hugging Face Logo](images/title.png)
+**Search missing docs • Translate with context • Review quality • Auto-create GitHub PRs**
 
-**Streamline Hugging Face Transformers documentation translation with Claude AI**   
-• **Auto-generate GitHub PRs** • **Multi-language support**
-
-> 🎯 **Created to address [Hugging Face Transformers Issue #20179](https://github.com/huggingface/transformers/issues/20179)** - Making documentation translation more accessible and automated for the global community.
-
-[🚀 Try Live Demo](https://huggingface.co/spaces/Agents-MCP-Hackathon/hf-transformers-docs-i18n-agent) • [📹 Watch Demo](#-demo-video) • [📖 Documentation](#-quick-start)
+> 🎯 **Created to address [Hugging Face Transformers Issue #20179](https://github.com/huggingface/transformers/issues/20179)**  
+> Improving and streamlining documentation internationalization workflows  
 
 </div>
 
@@ -34,274 +28,190 @@ pinned: false
 
 ## ✨ What is this?
 
-Transform the way you contribute to Hugging Face Transformers' global community! This AI agent automatically:
+**hf-translation-hub MCP Servers** is a collection of **Model Context Protocol (MCP)–compliant servers**
+designed to automate and standardize **Hugging Face documentation translation workflows**.
 
-- 🔍 **Discovers** missing translations in [Transformers documentation](https://huggingface.co/docs/transformers/en/index)
-- 🤖 **Translates** using Claude Sonnet 4 with technical precision  
-- 📝 **Creates** GitHub pull requests ready for review on [huggingface/transformers](https://github.com/huggingface/transformers)
-- 💬 **Guides** you through the entire process
+Rather than providing a single, monolithic UI agent, this project exposes **translation-related capabilities as independent MCP servers**.  
+These servers can be orchestrated by external AI agents to build flexible, scalable, and inspectable translation pipelines.
 
-> **Perfect for**: Contributors addressing [Issue #20179](https://github.com/huggingface/transformers/issues/20179), documentation maintainers, and international communities wanting to make transformer models accessible worldwide.
+Inspired by the original *i18n-agent*, this project focuses on **agent-native, server-side tooling**.
 
-## 🎯 Addressing the Community Need
+The MCP servers enable agents to:
 
-This project was specifically created to solve [Hugging Face Transformers Issue #20179](https://github.com/huggingface/transformers/issues/20179), which highlights the need for better internationalization tooling. Our agent tackles the core challenges mentioned in the issue:
+- 🔍 **Discover** untranslated or outdated documentation files
+- 🤖 **Translate** technical documents with context awareness and structure preservation
+- 🧪 **Review** translation quality, terminology, and formatting consistency
+- 📝 **Create** GitHub pull requests automatically
 
-- **🚧 Translation Bottlenecks**: Automates the manual translation process
-- **📊 Consistency Issues**: Maintains uniform translation quality within each languages  
-- **⚡ Scalability Problems**: Handles batch translations efficiently
-- **🤝 Contributor Barriers**: Simplifies the PR creation workflow for translators
+---
 
-## 🎥 Demo Video
+## 🎯 Why MCP Servers?
 
-[Hugging Face i18n Agent Demo](https://youtu.be/J2MBMNk7la8?si=7867ztaU2nPN0UEo)
+Documentation translation is not a single action—it is a **workflow**.
 
-*Watch the complete walkthrough: from setup to PR creation in under 5 minutes*
+Based on the project overview, the core problem identified was that traditional approaches
+bundle discovery, translation, review, and PR creation into tightly coupled systems,
+making them hard to reuse, automate, or adapt.
 
-## 🚀 Quick Start
+This project adopts a **multi-server MCP architecture** to solve that problem:
 
-![KREW x Hugging Face Logo](images/demo.png)
+- Each MCP server has a **single, well-defined responsibility**
+- Agents can **compose only the steps they need**
+- Each step is **explicit, inspectable, and retryable**
+- Workflows can evolve without rewriting the entire system
 
-### Option 1: One-Click Demo (Recommended)
-[![Open in Spaces](https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-md-dark.svg)](https://huggingface.co/spaces/YOUR_USERNAME/i18n-agent)
+This design supports:
 
-✅ **No setup required!** Just click and start translating.  
-✅ **Pre-requisites!** Need `Anthropic API key` and `Github token`.
+- 🤖 Fully autonomous translation agents
+- 🧑‍💻 Human-in-the-loop translation workflows
+- 📦 Batch and incremental localization pipelines
+- 🔁 Continuous documentation updates
 
-### Option 2: Run Locally
-
-<details>
-<summary>🛠️ Local Installation Guide</summary>
-
-```bash
-# Clone the repo
-git clone https://github.com/Hugging-Face-KREW/i18n-agent.git
-cd i18n-agent
-
-# Install dependencies  
-make install
-source .venv/bin/activate
-
-# Set up your keys
-cp .env.example .env
-# Add your Anthropic API key and GitHub token
-
-# Launch the app
-python app.py
-```
-
-</details>
-
-## 🎯 How It Works
-
-This agent specifically targets the [Hugging Face Transformers documentation](https://huggingface.co/docs/transformers/en/index) and submits PRs addressing [Issue #20179](https://github.com/huggingface/transformers/issues/20179) in the [huggingface/transformers](https://github.com/huggingface/transformers) repository.
-
-```mermaid
-graph LR
-    A[🔍 Find Files] --> B[🤖 Translate] --> C[📝 Create PR]
-    
-    A --> A1[Scan transformers docs]
-    A --> A2[Identify translation gaps]
-    
-    B --> B1[Claude AI translation]
-    B --> B2[Preserve formatting]
-    
-    C --> C1[Auto-branch creation]
-    C --> C2[Submit to huggingface/transformers]
-```
-
-### Step 1: 🔍 Discover Translation Targets
-- Select your target language (Korean, and more languages will be supported)
-- Set how many files to process
-- Let AI identify the most impactful Transformers docs translations
-
-### Step 2: 🤖 Smart Translation
-- Enter your Anthropic API key
-- Claude Sonnet 4 translates with context awareness
-- Technical terms and code blocks preserved automatically
-
-### Step 3: 📝 Automated PR Creation  
-- Configure GitHub credentials
-- System creates properly formatted pull requests for [huggingface/transformers](https://github.com/huggingface/transformers)
-- Optional: Use reference PRs for consistency
+---
 
 ## 🌍 Supported Languages
 
 <div align="center">
 
 | Language | Code | Status |
-|----------|------|--------|
-| 🇰🇷 Korean | `ko` | ✅ Fully Supported |
+|---------|------|--------|
+| 🇰🇷 Korean | `ko` | ✅ Supported |
+| 🇯🇵 Japanese | `ja` | ✅ Supported |
+| 🇨🇳 Chinese | `zh` | ✅ Supported |
+| 🇫🇷 French | `fr` | ✅ Supported |
+| 🇩🇪 German | `de` | ✅ Supported |
 
-*And more languages coming soon...*
+*Additional languages may be added incrementally.*
 
 </div>
 
-## 🏗️ Architecture
+---
+
+## 🧭 Available MCP Servers
 
 <div align="center">
-    <a href="images/workflow.png" target="_blank">
-        <img src="images/workflow.png" alt="KREW x Hugging Face Logo" width="400">
-    </a>
+
+| MCP Server | Role |
+|-----------|------|
+| **Docs Explorer MCP** | Discover documentation files and analyze translation status |
+| **Translation MCP** | Translate documents while preserving markdown and code structure |
+| **PR Review MCP** | Review translation quality, terminology, and structural consistency |
+| **PR Creation MCP** | Create GitHub branches, commits, and pull requests |
+
 </div>
 
+Each MCP server is **independently deployable** and **independently usable**.
+
+---
+
+## 🎥 Demo Video
+
+[Hugging Face Translation Hub MCP – End-to-End Demo](https://drive.google.com/file/d/1TqjEYHqbPbPzwAq_a45htm3wIBJ0CI4R/view?usp=sharing)  
+*Full walkthrough showing discovery → translation → PR creation → review*
+
+---
+
+## 🚀 Quick Start (MCP Usage)
+
+These MCP servers can be used from any MCP-compatible client, including:
+
+- Claude Desktop (MCP)
+- HuggingChat MCP
+- Custom Python / Node.js agents
+- n8n MCP workflows
+
+
+> The example below demonstrates a typical discovery interaction with the Docs Explorer MCP.
+
 <details>
+<summary>Show MCP request example</summary>
 
-<summary>📊 System Design Overview</summary>
-
-**Frontend Layer**
-- Gradio web interface with modern styling
-- Real-time chat & quick controls with AI agent
-- Progress tracking missing 
-
-**AI Processing Layer**  
-- File discovery with intelligent prioritization for Transformers docs
-- Claude Sonnet 4 for context-aware translation
-- LangChain integration for PR research
-
-**Integration Layer**
-- GitHub API for automated PR creation to [huggingface/transformers](https://github.com/huggingface/transformers)
-- Branch management and commit structuring
-- Template matching from reference PRs
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "call-1",
+  "method": "tools/call",
+  "params": {
+    "name": "hf_translation_docs_explorer_search_files",
+    "arguments": {
+      "project": "transformers",
+      "lang": "ko",
+      "limit": 10,
+      "include_status_report": true
+    }
+  }
+}
+```
 
 </details>
 
-## ⚙️ Configuration
+> Translation and GitHub PR creation are handled by their respective MCP servers.
+> For authoritative tool names, parameters, and end-to-end examples, please refer to the project overview: [https://hugging-face-krew.github.io/translation-mcp-project-overview/](https://hugging-face-krew.github.io/translation-mcp-project-overview/)
 
-### For Spaces Deployment
-Prepare these secrets:
 
-```bash
-ANTHROPIC_API_KEY=your_claude_api_key
-GITHUB_TOKEN=your_github_token  
-```
+---
 
-### For Local Development
-Create `.env` file:
+## 🔁 How It Works
 
-```bash
-ANTHROPIC_API_KEY=<your api key>
+<img width="5836" height="5412" alt="image" src="https://github.com/user-attachments/assets/431ddf2e-ce3f-48d7-adad-3382be4bb2f4" />
 
-# GitHub PR Agent Configuration
-GITHUB_TOKEN=<your github token>
-GITHUB_OWNER=<your github username>
-GITHUB_REPO=<your repository name>
-REFERENCE_PR_URL=<reference pr url for style analysis>
-```
+Each step is optional.
+Agents may stop after translation, insert custom validation logic, or replace steps as needed.
 
-## 🤝 Contributing
+---
 
-<div align="center">
+## 🧠 Design & Architecture
 
-**Love this project? Here's how you can help:**
+Detailed design rationale, MCP boundaries, and architectural decisions are documented in:
 
-[![Fork](https://img.shields.io/github/forks/username/repo?style=social)](https://github.com/Hugging-Face-KREW/i18n-agent.git)
-[![Star](https://img.shields.io/github/stars/username/repo?style=social)](https://github.com/Hugging-Face-KREW/i18n-agent.git)
-[![Issues](https://img.shields.io/github/issues/username/repo)](https://github.com/Hugging-Face-KREW/i18n-agent.git)
+* **[Translation MCP Project Overview](https://hugging-face-krew.github.io/translation-mcp-project-overview/)**
+  
+* **[MCP Server Design & Tooling](https://hugging-face-krew.github.io/hf_translation_hub_mcp_design_and_tooling/)**
 
-</div>
+* **[MCP Server Usage Guide](https://hugging-face-krew.github.io/hf-translation-hub-mcp-server-usage-guide/)**
 
-### 👥 Contributors
+This README focuses on **what the servers do and how to use them**.
+For the deeper design motivation and trade-offs, please refer to the links above.
 
-🤗 shhr.kre@gmail.com / @harheem  
-🤗 jminj6@gmail.com / @Jwaminju
-
-## 💡 Use Cases
-
-> **🌟 Real-world scenarios where this agent shines:**
-
-- **📚 Documentation Teams**: Batch translate Transformers documentation updates
-- **🌍 Community Contributors**: Help make Transformers accessible in your language  
-- **🏢 Organizations**: Streamline i18n workflows for Transformers library
-- **👨‍💻 Developers**: Contribute Transformers translations without manual GitHub workflow
-- **🎯 Issue #20179 Contributors**: Directly address the internationalization challenges raised by the community
+---
 
 ## 🛠️ Tech Stack
 
 <div align="center">
 
-![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
-![Gradio](https://img.shields.io/badge/gradio-FF6B35?style=for-the-badge&logo=gradio&logoColor=white)
-![Anthropic](https://img.shields.io/badge/Claude-191919?style=for-the-badge&logo=anthropic&logoColor=white)
-![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)
-![LangChain](https://img.shields.io/badge/LangChain-121212?style=for-the-badge&logo=chainlink&logoColor=white)
+![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge\&logo=python\&logoColor=ffdd54)
+![Gradio](https://img.shields.io/badge/gradio-FF6B35?style=for-the-badge\&logo=gradio\&logoColor=white)
+![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge\&logo=github\&logoColor=white)
+![MCP](https://img.shields.io/badge/MCP-Model%20Context%20Protocol-blue?style=for-the-badge)
 
 </div>
-
-## ❓ FAQ
-
-<details>
-<summary><strong>Q: How does this relate to Issue #20179?</strong></summary>
-<br>
-This agent directly addresses the pain points raised in <a href="https://github.com/huggingface/transformers/issues/20179">Issue #20179</a> by automating the translation workflow, reducing manual overhead, and making it easier for contributors to submit high-quality translations.
-</details>
-
-<details>
-<summary><strong>Q: How accurate are the translations?</strong></summary>
-<br>
-The agent uses Claude Sonnet 4, which provides high-quality translations with technical context awareness. It preserves code blocks, maintains formatting, and follows established translation patterns.
-</details>
-
-<details>
-<summary><strong>Q: What permissions do I need for GitHub integration?</strong></summary>
-<br>
-Your GitHub token needs repository read/write permissions and the ability to create branches and pull requests on the target repository.
-</details>
-
-<details>
-<summary><strong>Q: Can I customize the translation style?</strong></summary>
-<br>
-Yes! You can provide reference PR URLs to match existing translation patterns and maintain consistency with community standards.
-</details>
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-<details>
-<summary><strong>API Key Issues</strong></summary>
-
-- Ensure your Anthropic API key is valid and has sufficient credits  
-- Check that your GitHub token has the necessary repository permissions  
-
-</details>
-
-<details>
-<summary><strong>Translation Quality</strong></summary>
-
-- The system uses Claude Sonnet 4 for high-quality translations  
-- Formatting and markdown structure is maintained  
-- Please restart the translation again if you met format issue
-
-</details>
-
-<details>
-<summary><strong>GitHub PR Creation</strong></summary>
-
-- Verify repository permissions and branch protection rules  
-- Check that the reference PR URL is accessible and valid  
-
-</details>
-
-
-## 🙏 Acknowledgments
-
-Special thanks to the amazing communities that make this possible:
-
-- **🤗 Hugging Face** - For building the Transformers library and comprehensive documentation
-- **🎭 Anthropic** - For Claude's incredible language capabilities  
-- **👥 Hugging Face KREW Community** - For championing Korean AI translation
-- **🎨 Gradio** - For making beautiful AI interfaces simple
-- **🌍 Community Contributors** - For raising awareness through [Issue #20179](https://github.com/huggingface/transformers/issues/20179)
 
 ---
 
-<div align="center">
+## 💡Use Cases
+* **[n8n-Based Translation Automation](https://hugging-face-krew.github.io/hf-translation-mcp-n8n/)**
 
-**Made with ❤️ for global accessibility of Hugging Face Transformers documentation.**
+Integrate MCP servers into an n8n workflow to automate document discovery, translation, and GitHub PR creation on a schedule or event basis.  
+This enables fully automated, repeatable translation pipelines without manual intervention.
 
-**🎯 Solving [Issue #20179](https://github.com/huggingface/transformers/issues/20179) one translation at a time.**
+---
 
-[⭐ Star this repo](https://github.com/Hugging-Face-KREW/i18n-agent.git) • [🐛 Report Bug](https://github.com/Hugging-Face-KREW/i18n-agent.git) • [💡 Request Feature](https://github.com/Hugging-Face-KREW/i18n-agent.git)
+## 🤝 Contributing
 
-</div>
+Contributions are welcome and encouraged.
+
+**Ways to contribute:**
+
+* Add new MCP servers or tools
+* Improve translation or review logic
+* Extend language support
+* Improve documentation and examples
+
+**Guidelines:**
+
+* Keep MCP servers single-responsibility
+* Avoid hidden cross-server side effects
+* Preserve tool input/output contracts
+
+
+
