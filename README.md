@@ -173,6 +173,8 @@ Detailed design rationale, MCP boundaries, and architectural decisions are docum
 This README focuses on **what the servers do and how to use them**.
 For the deeper design motivation and trade-offs, please refer to the links above.
 
+<img width="1297" height="1776" alt="architecture" src="https://github.com/user-attachments/assets/4010a3c2-b72e-431f-9662-5d25bd995073" />
+
 ---
 
 ## 🛠️ Tech Stack
@@ -212,6 +214,7 @@ Contributions are welcome and encouraged.
 * Keep MCP servers single-responsibility
 * Avoid hidden cross-server side effects
 * Preserve tool input/output contracts
+
 
 
 
